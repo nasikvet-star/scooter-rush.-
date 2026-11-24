@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#08111f"><meta name="mobile-web-app-capable" content="yes"><title>Scooter Rush 3D — версія 7.0</title>
+<style>
+:root{--bg:#050b14;--panel:#101c2c;--accent:#ffb52e;--cyan:#46e0ed;--text:#f5f8ff;--muted:#aabbd0;--line:#ffffff25}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}button,.control{ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}input,textarea{ -webkit-user-select:text;user-select:text}body{margin:0;background:radial-gradient(ellipse at 50% 0%,#17324c 0%,#07111e 58%,#03070d 100%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;z-index:3;inset:0;pointer-events:none;padding:12px;display:flex;flex-direction:column;justify-content:space-between}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.brand,.stats,.panel{background:linear-gradient(145deg,#10233add,#071321eF);border:1px solid #ffffff2b;backdrop-filter:blur(14px);border-radius:17px;padding:11px 14px;box-shadow:0 12px 34px #0008,inset 0 1px #ffffff14}
+.brand strong{display:block;font-size:17px;letter-spacing:1px}.brand small{color:var(--muted)}
+.stats{display:flex;gap:14px;font-weight:700;font-size:14px}.stats span{color:var(--accent)}
+.bottom{display:flex;justify-content:space-between;align-items:end;gap:10px}.speedbox{min-width:112px}.speed{font-size:36px;font-weight:900;line-height:1}.speed small{font-size:12px;color:var(--muted)}
+.controls{display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end;max-width:min(72vw,430px)}.control{width:62px;height:62px;border-radius:19px;border:1px solid #ffffff66;background:linear-gradient(145deg,#213b58ed,#0a1728ed);color:white;font-size:24px;font-weight:900;touch-action:none;box-shadow:0 7px 18px #0007,inset 0 1px #ffffff20}.control:active{background:linear-gradient(145deg,#ffd36d,#e78b22);color:#101820;transform:scale(.96)}.control.boost{background:linear-gradient(145deg,#ff873a,#a92e19);color:white;font-size:13px;width:82px}
+#menu{position:fixed;z-index:5;inset:0;background:radial-gradient(ellipse at 50% 0%,#153b50eF,#06101df7 68%),linear-gradient(145deg,#06101fee,#10283bee);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.card{width:min(680px,100%);max-height:95vh;overflow:auto;background:linear-gradient(150deg,#10263bf7,#071321f8);border:1px solid #6ee7f255;border-radius:26px;padding:22px;box-shadow:0 28px 100px #000b,inset 0 1px #ffffff18}
+h1{font-size:clamp(27px,7vw,43px);margin:0 0 4px;letter-spacing:1px}h1 em{color:var(--accent);font-style:normal}.sub{color:var(--muted);margin:0 0 18px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between}.money{color:var(--accent);font-weight:900}
+button{border:0;border-radius:13px;padding:12px 15px;font-weight:900;background:linear-gradient(135deg,#ffd36d,#f29a28);color:#152033;cursor:pointer;font-size:14px;box-shadow:0 5px 14px #0004}
+button.secondary{background:#263b55;color:white;border:1px solid #ffffff20}button:disabled{opacity:.4;cursor:not-allowed}
+.tabs{display:flex;gap:7px;margin:16px 0}.tabs button{flex:1;background:#24364e;color:#c8d5e5}.tabs button.active{background:var(--accent);color:#172033}
+.item{display:flex;align-items:center;gap:12px;background:linear-gradient(130deg,#15374a,#0b1c2d);border:1px solid #ffffff20;border-radius:17px;padding:13px;margin:10px 0;box-shadow:0 8px 20px #0003}
+.scoot{font-size:38px}.iteminfo{flex:1}.iteminfo b{display:block}.iteminfo small{color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.actions button{flex:1}
+.garagePreview{background:linear-gradient(135deg,#102f43,#081827);border:1px solid #4de0e766;border-radius:19px;padding:12px 15px;margin:12px 0 14px;box-shadow:inset 0 1px #ffffff18,0 10px 25px #0004}.previewHead,.previewFoot{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:#a9c4d5}.previewHead b{color:#ffd06a;font-size:13px;text-align:right}.garagePreview canvas{display:block;width:100%;height:150px}.previewFoot{border-top:1px solid #ffffff1c;padding-top:8px}.previewFoot span:last-child{color:#63e6bd}
+.hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:13px}
+#crashOverlay{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;background:radial-gradient(circle,#ff5b2430,#070b12a8);pointer-events:none;animation:crashFlash .18s ease-in-out 5 alternate}.crashCard{padding:22px 34px;border:2px solid #ff693d;border-radius:22px;background:#141923eF;text-align:center;box-shadow:0 0 45px #ff3c1888;transform:rotate(-4deg)}.crashCard strong{display:block;color:#ff603c;font-size:clamp(34px,9vw,58px);letter-spacing:3px}.crashCard span{display:block;color:#fff;font-weight:700}@keyframes crashFlash{from{opacity:.55}to{opacity:1}}
+#toast{position:fixed;z-index:8;top:18%;left:50%;transform:translateX(-50%);background:#101e31ee;border:1px solid #ffffff30;border-radius:13px;padding:11px 16px;display:none;text-align:center;font-weight:700}
+#turboHud{position:fixed;z-index:4;left:50%;top:108px;transform:translateX(-50%);width:min(210px,45vw);display:none;text-align:center;color:#fff;font-size:12px;font-weight:900;text-shadow:0 2px 5px #000}#turboTrack{height:9px;margin-top:5px;background:#07111dcc;border:1px solid #ffffff55;border-radius:20px;overflow:hidden}#turboFill{height:100%;width:100%;background:linear-gradient(90deg,#39e7d1,#ffc247,#ff633d);transition:width .08s linear}#racebar{position:fixed;z-index:3;top:88px;left:50%;transform:translateX(-50%);width:min(250px,45vw);height:7px;background:#0b1728aa;border-radius:9px;overflow:hidden;display:none}#progress{height:100%;width:0;background:var(--accent)}
+@media(max-width:520px){
+ .stats{gap:8px;font-size:12px;padding:9px}.brand{padding:8px 10px}.brand strong{font-size:14px}
+ .control{width:52px;height:52px;border-radius:14px;padding:5px;font-size:21px}
+ .control.boost{width:65px;font-size:12px}.controls{gap:5px;max-width:76vw}
+ .bottom{align-items:end}.card{padding:18px}.hud{padding:8px}
+}
+@media(max-height:520px){.card{max-height:90vh;padding:14px}.controls{max-width:65vw}.control{height:46px;width:48px}.control.boost{width:60px}}
+#steerPad{position:static;transform:none;display:flex;flex-direction:column;gap:5px;pointer-events:auto;flex:0 0 auto}#steerPad .control{width:48px;height:48px;background:linear-gradient(145deg,#244967ed,#091a2ded);font-size:22px}#driveControls{margin-left:auto;max-width:58vw;justify-content:flex-end}.bottom{align-items:flex-end}.speedbox{align-self:flex-end}
+@media(max-width:520px){#steerPad{left:auto;top:auto;gap:4px}#steerPad .control{width:38px;height:42px;padding:3px;font-size:19px}.controls{max-width:58vw}.control.boost{width:55px}.control{width:42px;height:46px}#driveControls{max-width:52vw}.bottom{padding:0;gap:5px}.speedbox{min-width:88px;padding:8px}.speed{font-size:29px}}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div class="hud">
+ <div class="top">
+  <div class="brand"><strong>SCOOTER RUSH <span style="color:#ffb52e">3D</span></strong><small>МІСЬКІ ПЕРЕГОНИ</small></div>
+  <div class="stats"><div>💰 <span id="cash">500</span></div><div>🏆 <span id="wins">0</span></div></div>
+ </div>
+ <div class="bottom">
+  <div class="panel speedbox"><div class="speed"><span id="speed">0</span> <small>км/ч</small></div><small id="status" style="color:#a9b7c9">Готов к старту</small></div>
+  <div id="steerPad"><button class="control" id="left">◀</button><button class="control" id="right">▶</button></div>
+  <div class="controls" id="driveControls">
+   <button class="control" id="brake" style="font-size:13px">ГАЛЬМОЗ</button><button class="control boost" id="gas" style="background:linear-gradient(135deg,#28c77a,#087344)">ГАЗ</button><button class="control boost" id="boost">ТУРБО ⚡</button>
+  </div>
+ </div>
+</div>
+<div id="racebar"><div id="progress"></div></div><div id="turboHud">ТУРБО <span id="turboPct">100%</span><div id="turboTrack"><div id="turboFill"></div></div></div><button id="pause" style="display:none;position:fixed;z-index:4;top:105px;right:14px;background:#0b1728dd;color:white;border:1px solid #ffffff44">Ⅱ ПАУЗА</button>
+<div id="toast"></div><div id="crashOverlay"><div class="crashCard"><strong>АВАРІЯ!</strong><span>Мотоцикл зіткнувся з автомобілем</span></div></div>
+<div id="menu">
+ <div class="card">
+  <h1>SCOOTER <em>RUSH 3D</em></h1>
+  <p class="sub">Обирай свій байк, долай траси та збирай монети на нові деталі.</p>
+  <div class="row"><b>Твій баланс</b><div class="money">💰 <span id="menuCash">500</span></div></div>
+  <div class="tabs"><button class="active" data-tab="race">ГОНКА</button><button data-tab="garage">ГАРАЖ</button><button data-tab="tune">ТЮНИНГ</button></div>
+  <section id="tab-race">
+   <div class="garagePreview"><div class="previewHead"><span>ТВІЙ ТРАНСПОРТ</span><b id="previewName">СТАРА АЛЬФА СУДЕЙКА</b></div><canvas id="previewCanvas"></canvas><div class="previewFoot"><span id="selectedStats">125 cc · мопед</span><span>🏁 ГОТОВИЙ ДО ЗАЇЗДУ</span></div></div>
+   <div class="item" style="display:block"><b>Траса</b><div class="actions" style="margin-top:8px"><button class="secondary track active" data-track="city">МІСТО</button><button class="secondary track" data-track="coast">УЗБЕРЕЖЖЯ</button><button class="secondary track" data-track="forest">ЛІС</button></div><div style="height:10px"></div><b>Складність</b><div class="actions" style="margin-top:8px"><button class="secondary difficulty" data-diff="easy">ЛЕГКА</button><button class="secondary difficulty active" data-diff="medium">СЕРЕДНЯ</button><button class="secondary difficulty" data-diff="hard">СКЛАДНА</button></div></div>
+   <p class="hint">Утримуй ГАЗ, щоб розганятися. Стрілки — поворот, ГАЛЬМО — уповільнення, ТУРБО — ривок. На комп’ютері: WASD або стрілки. Збирай монети й обганяй автомобілі. У нескінченному режимі кожен кілометр приносить нагороду.</p>
+   <div class="actions"><button id="start">ПОЧАТИ ГОНКУ</button><button id="endless" class="secondary">НЕСКІНЧЕННИЙ РЕЖИМ</button><button class="secondary" id="how">ЯК ГРАТИ?</button></div>
+  </section>
+  <section id="tab-garage" hidden><div id="garageList"></div></section>
+  <section id="tab-tune" hidden>
+   <p class="hint">Встановлюй деталі окремо: кожен рівень покращує характеристики вибраного транспорту.</p>
+   <div class="item"><div class="scoot">⚙️</div><div class="iteminfo"><b>Двигун — рівень <span id="engineLvl">0</span>/5</b><small>Підвищує максимальну швидкість</small></div><button id="engineBuy">150 💰</button></div>
+   <div class="item"><div class="scoot">🛞</div><div class="iteminfo"><b>Шини — рівень <span id="tireLvl">0</span>/3</b><small>Покращують керування</small></div><button id="tireBuy">100 💰</button></div>
+   <div class="item"><div class="scoot">⚡</div><div class="iteminfo"><b>Турбо — рівень <span id="turboLvl">0</span>/3</b><small>Збільшує силу прискорення</small></div><button id="turboBuy">220 💰</button></div>
+   <div class="item"><div class="scoot">🏁</div><div class="iteminfo"><b>Вихлоп — рівень <span id="exhaustLvl">0</span>/3</b><small>Більше прискорення та спортивний звук</small></div><button id="exhaustBuy">180 💰</button></div>
+   <div class="item"><div class="scoot">🧠</div><div class="iteminfo"><b>ЕБУ — рівень <span id="ecuLvl">0</span>/3</b><small>Підвищує максимальну швидкість</small></div><button id="ecuBuy">260 💰</button></div>
+   <div class="item"><div class="scoot">🛠️</div><div class="iteminfo"><b>Підвіска — рівень <span id="suspensionLvl">0</span>/3</b><small>Покращує керування на поворотах</small></div><button id="suspensionBuy">200 💰</button></div>
+  </section>
+  <p class="hint">Версія 7.0 · чотири смуги, рухомий світ і розширений тюнінг · Viper Wind «Скутер Вайпер Боса», звук двигуна з газуванням, рухомі автомобілі, міські декорації й анімація аварії. Прогрес зберігається на цьому пристрої.</p>
+ </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const defaults={version:6,cash:500,wins:0,owned:[0],selected:0,engine:0,tires:0,turbo:0,exhaust:0,ecu:0,suspension:0};
+let save;
+try {
+ const raw=JSON.parse(localStorage.getItem('scooterRushSave')||'{}');
+ save={...defaults,...raw};
+ if(!Array.isArray(save.owned)) save.owned=[0];
+ save.owned=[...new Set(save.owned.filter(v=>Number.isInteger(v)&&v>=0&&v<6))];
+ // У попередній версії Вайпер був безкоштовним: у версії 6 його потрібно купити за 4000.
+ if((raw.version||0)<6){save.owned=save.owned.filter(v=>v!==5);if(save.selected===5)save.selected=0;}
+ save.version=6;
+ if(!save.owned.includes(0)) save.owned.unshift(0);
+ save.selected=Number.isInteger(save.selected)&&save.owned.includes(save.selected)?save.selected:0;
+ for(const k of ['cash','wins','engine','tires','turbo','exhaust','ecu','suspension']) {
+  const n=Number(save[k]); save[k]=Number.isFinite(n)?Math.max(0,Math.floor(n)):defaults[k];
+ }
+ save.engine=Math.min(5,save.engine);save.tires=Math.min(3,save.tires);save.turbo=Math.min(3,save.turbo);save.exhaust=Math.min(3,save.exhaust);save.ecu=Math.min(3,save.ecu);save.suspension=Math.min(3,save.suspension);
+} catch(e) { save={...defaults}; }
+const scooters=[
+ {name:'Стара Альфа Судейка',cc:'125 cc · стара, подряпана й іржава Альфа',price:0,max:92,color:0x75452c,emoji:'🏍️',style:'oldalpha'},
+ {name:'Yamaha YZF-R1',cc:'998 cc · спортбайк',price:1800,max:185,color:0xf0a42d,emoji:'🏍️',style:'sport'},
+ {name:'Kawasaki Ninja 400',cc:'399 cc · спортбайк',price:2600,max:175,color:0x277bd0,emoji:'🏍️',style:'ninja'},
+ {name:'Honda CBR600RR',cc:'599 cc · суперспорт',price:3900,max:205,color:0xe44c48,emoji:'🏁',style:'super'},
+ {name:'Alpha 110 «Кобила»',cc:'110 cc · мопед',price:1450,max:130,color:0x222222,emoji:'🏍️',style:'alpha'},
+ {name:'Скутер Вайпер Боса',cc:'Viper Wind · міський скутер',price:4000,max:400,color:0x19a6a2,emoji:'🛵',style:'viperwind'}
+];
+let scene,camera,renderer,player,road,ground,clock,objects=[],rivals=[],trafficCars=[],running=false,finished=false,crashTimer=0,crashedRun=false,crashSparks=[],previewScene,previewCamera,previewRenderer,previewBike,scenery=[],roadTexture=null,groundTexture=null;
+let speed=0,progress=0,lane=0,steer=0,boostTime=0,spawn=0,roadLines=[],coins=[],track="city",difficulty="medium",paused=false,coinCount=0;
+let endlessMode=false, endlessKm=0, segmentCoins=0, turboCharge=100, turboActive=false, audioCtx=null, engineOsc=null, engineGain=null, engineOsc2=null, engineGain2=null, assetTextures={},engineAudio=new Audio('assets/motorcycle-engine.mp3');engineAudio.loop=true;engineAudio.preload='auto';engineAudio.volume=.4;
+const canvas=$('game');document.addEventListener('contextmenu',e=>{if(e.target.closest('.controls'))e.preventDefault()});
+function persist(){try{localStorage.setItem('scooterRushSave',JSON.stringify(save))}catch(e){toast('Сохранение недоступно в этом режиме браузера')}refresh()}
+function audioReady(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC){audioCtx=new AC();engineOsc=audioCtx.createOscillator();engineGain=audioCtx.createGain();engineOsc.type='sawtooth';engineOsc.frequency.value=65;engineGain.gain.value=0;engineOsc.connect(engineGain);engineGain.connect(audioCtx.destination);engineOsc.start();engineOsc2=audioCtx.createOscillator();engineGain2=audioCtx.createGain();engineOsc2.type='square';engineOsc2.frequency.value=32;engineGain2.gain.value=0;engineOsc2.connect(engineGain2);engineGain2.connect(audioCtx.destination);engineOsc2.start()}}if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();if(running&&!paused)engineAudio.play().catch(()=>{})}
+function playSound(type){audioReady();if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),now=audioCtx.currentTime;o.connect(g);g.connect(audioCtx.destination);o.type=type==='turbo'?'sawtooth':'triangle';o.frequency.setValueAtTime(type==='turbo'?180:520,now);o.frequency.exponentialRampToValueAtTime(type==='turbo'?760:220,now+.24);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(type==='turbo'?.13:.07,now+.025);g.gain.exponentialRampToValueAtTime(.0001,now+.32);o.start(now);o.stop(now+.34)}
+function engineSound(){const active=running&&!paused;const throttle=!!(keys.gas||keys.arrowup||keys.w);if(active){if(engineAudio.paused)engineAudio.play().catch(()=>{});engineAudio.playbackRate=throttle?1.24+Math.min(speed,400)/950:1;engineAudio.volume=throttle?.76:.4}else{engineAudio.pause();engineAudio.playbackRate=1}if(audioCtx&&engineOsc&&engineGain){const t=audioCtx.currentTime;engineOsc.frequency.setTargetAtTime(38+speed*2.05,t,.055);engineGain.gain.setTargetAtTime(0,t,.09);if(engineGain2)engineGain2.gain.setTargetAtTime(0,t,.12)}}
+function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1900)}
+function refresh(){
+ $('cash').textContent=save.cash;$('menuCash').textContent=save.cash;$('wins').textContent=save.wins;
+ $('previewName').textContent=scooters[save.selected].name.toUpperCase();
+ $('selectedStats').textContent=scooters[save.selected].cc+' · макс. '+(scooters[save.selected].max+save.engine*5+save.ecu*12)+' км/год';
+ updatePreview();
+ $('engineLvl').textContent=save.engine;$('tireLvl').textContent=save.tires;$('turboLvl').textContent=save.turbo;
+ $('engineBuy').textContent=save.engine>=5?'МАКС': '250 💰';$('engineBuy').disabled=save.engine>=5||save.cash<250;
+ $('tireBuy').textContent=save.tires>=3?'МАКС':'180 💰';$('tireBuy').disabled=save.tires>=3||save.cash<180;
+ $('turboBuy').textContent=save.turbo>=3?'МАКС':'220 💰';$('turboBuy').disabled=save.turbo>=3||save.cash<220;
+ for(const [k,c,m] of [['exhaust',180,3],['ecu',260,3],['suspension',200,3]]){$(k+'Buy').textContent=save[k]>=m?'МАКС':c+' 💰';$(k+'Buy').disabled=save[k]>=m||save.cash<c;}
+ $('garageList').innerHTML=scooters.map((s,i)=>`<div class="item"><div class="scoot">${s.emoji}</div><div class="iteminfo"><b>${s.name}</b><small>${s.cc} · до ${s.max+save.engine*5+save.ecu*12} км/ч</small></div>${save.owned.includes(i)?`<button class="${save.selected===i?'secondary':''}" data-select="${i}" ${save.selected===i?'disabled':''}>${save.selected===i?'ВЫБРАН':'ВЫБРАТЬ'}</button>`:`<button data-buy="${i}" ${save.cash<s.price?'disabled':''}>${s.price} 💰</button>`}</div>`).join('');
+ document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{let i=+b.dataset.buy,s=scooters[i];if(save.cash>=s.price){save.cash-=s.price;save.owned.push(i);save.selected=i;persist();toast('Новий мотоцикл у гаражі!')}});
+ document.querySelectorAll('[data-select]').forEach(b=>b.onclick=()=>{save.selected=+b.dataset.select;persist();makePlayer();toast('Транспорт вибрано')});
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));['race','garage','tune'].forEach(t=>$('tab-'+t).hidden=t!==b.dataset.tab);refresh()});
+$('engineBuy').onclick=()=>buyUpgrade('engine',250,5);$('tireBuy').onclick=()=>buyUpgrade('tires',180,3);$('turboBuy').onclick=()=>buyUpgrade('turbo',220,3);$('exhaustBuy').onclick=()=>buyUpgrade('exhaust',180,3);$('ecuBuy').onclick=()=>buyUpgrade('ecu',260,3);$('suspensionBuy').onclick=()=>buyUpgrade('suspension',200,3);
+function buyUpgrade(k,c,max){if(save[k]>=max||save.cash<c)return;save.cash-=c;save[k]++;persist();toast('Улучшение установлено!')}
+$('how').onclick=()=>toast('Стрілки — поворот. Турбо — прискорення. Обганяй суперників!');
+function makeTexture(kind){
+ const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');
+ if(kind==='rust'){
+  x.fillStyle='#71452f';x.fillRect(0,0,512,512);for(let i=0;i<9000;i++){const c=Math.random();x.fillStyle=c<.2?'rgba(35,27,22,.55)':c<.55?'rgba(178,105,48,.42)':'rgba(120,62,33,.3)';x.fillRect(Math.random()*512,Math.random()*512,1+Math.random()*5,1+Math.random()*4)}
+ }else if(kind==='asphalt'){
+  x.fillStyle='#343a40';x.fillRect(0,0,512,512);
+  for(let i=0;i<26000;i++){const v=35+Math.random()*55;x.fillStyle=`rgba(${v},${v+2},${v+5},${Math.random()*.38})`;const r=Math.random()*2.2;x.fillRect(Math.random()*512,Math.random()*512,r,r)}
+  for(let i=0;i<18;i++){x.strokeStyle='rgba(10,14,18,.24)';x.lineWidth=1+Math.random()*2;x.beginPath();let px=Math.random()*512,py=Math.random()*512;x.moveTo(px,py);x.lineTo(px+(Math.random()-.5)*80,py+Math.random()*110);x.stroke()}
+ }else{
+  x.fillStyle='#416d3e';x.fillRect(0,0,512,512);
+  for(let i=0;i<22000;i++){const g=65+Math.random()*80;x.fillStyle=`rgba(${25+Math.random()*35},${g},${25+Math.random()*25},.42)`;x.fillRect(Math.random()*512,Math.random()*512,1+Math.random()*3,1+Math.random()*3)}
+ }
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(kind==='asphalt'?2:8,kind==='asphalt'?18:18);t.anisotropy=8;return t;
+}
+function init3D(){
+ if(!window.THREE){$('status').textContent='Нет 3D-библиотеки. Проверь интернет и обнови страницу.';toast('Не удалось загрузить 3D. Нужен интернет.');return}
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x83c9ed);scene.fog=new THREE.Fog(0x83c9ed,35,150);
+ camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,250);camera.position.set(0,5.4,10);camera.lookAt(0,1,-8);
+ try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});}catch(err){$('status').textContent='Браузер не поддерживает WebGL';toast('Включи аппаратное ускорение или открой в Safari/Chrome');return}renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
+ scene.add(new THREE.HemisphereLight(0xdff5ff,0x59634b,1.65));
+ const sun=new THREE.DirectionalLight(0xfff0d6,2.8);sun.position.set(-8,18,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
+ const loader=new THREE.TextureLoader();
+ const asphaltTex=loader.load('assets/asphalt.jpg',()=>{});roadTexture=asphaltTex;asphaltTex.wrapS=asphaltTex.wrapT=THREE.RepeatWrapping;asphaltTex.repeat.set(2,18);asphaltTex.anisotropy=8;
+ const grassTex=loader.load('assets/grass.jpg',()=>{});groundTexture=grassTex;grassTex.wrapS=grassTex.wrapT=THREE.RepeatWrapping;grassTex.repeat.set(8,18);grassTex.anisotropy=8;
+ assetTextures.rust=loader.load('assets/rust.jpg',()=>{if(player&&scooters[save.selected].style==='oldalpha')makePlayer()});assetTextures.metal=loader.load('assets/metal.jpg',()=>{});
+ ground=new THREE.Mesh(new THREE.PlaneGeometry(200,240),new THREE.MeshStandardMaterial({color:0xffffff,map:grassTex,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.z=-80;ground.receiveShadow=true;scene.add(ground);
+ road=new THREE.Mesh(new THREE.PlaneGeometry(16,240),new THREE.MeshStandardMaterial({color:0xffffff,map:asphaltTex,roughness:.96}));road.rotation.x=-Math.PI/2;road.position.set(0,.02,-80);scene.add(road);
+ for(let x of [-7.85,7.85]){let curb=new THREE.Mesh(new THREE.BoxGeometry(.22,.12,240),new THREE.MeshStandardMaterial({color:0xe7e8e8}));curb.position.set(x,.08,-80);scene.add(curb)}
+ for(let x of [-4,0,4])for(let z=-180;z<15;z+=10){let m=new THREE.Mesh(new THREE.BoxGeometry(.12,.025,4),new THREE.MeshStandardMaterial({color:0xe9e8dc}));m.position.set(x,.05,z);scene.add(m);roadLines.push(m)}
+ // Деталізовані будинки, магазини, ліс і узбережжя
+ const mat=(color,roughness=.85)=>new THREE.MeshStandardMaterial({color,roughness});
+ function addBuilding(side,z,shop=false){
+  const g=new THREE.Group(),w=shop?4.3:3.4,h=shop?3.4:4.2,d=3.2,wall=mat(shop?0xe8d6b5:[0xd9c5a8,0xb8c7cf,0xd9d0bd][Math.floor(Math.random()*3)]),roof=mat([0x743d32,0x35475c,0x4c5545][Math.floor(Math.random()*3)]);
+  const box=(ww,hh,dd,x,y,zz,m)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(ww,hh,dd),m);o.position.set(x,y,zz);o.castShadow=true;g.add(o);return o};
+  box(w,h,d,0,h/2,0,wall);box(w+.3,.24,d+.3,0,h+.12,0,roof);
+  for(const x of (shop?[-1.35,1.35]:[-.9,.9])){box(.92,1.05,.08,x,1.55,-d/2-.05,mat(0x75b6cf,.25));box(1.02,.1,.12,x,2.1,-d/2-.1,roof)}
+  box(shop?1.05:.78,1.7,.1,0,.88,-d/2-.08,mat(shop?0x36566b:0x674a39));
+  if(shop){box(w+.45,.62,.22,0,2.8,-d/2-.14,mat(0x1d7890));box(w+.48,.13,.25,0,2.48,-d/2-.14,mat(0xf1b84c))}
+  g.position.set(side*(11+Math.random()*4),0,z);g.userData.track='city';scene.add(g);scenery.push(g);
+ }
+ for(let i=0;i<24;i++)addBuilding(i%2?1:-1,-i*8-12,i%3===0);
+ function addTree(side,z,pine=true,trackName='forest'){
+  const g=new THREE.Group(),tr=new THREE.Mesh(new THREE.CylinderGeometry(.16,.24,2.3,7),mat(0x70503a));tr.position.y=1.15;g.add(tr);
+  if(pine){for(let n=0;n<3;n++){const crown=new THREE.Mesh(new THREE.ConeGeometry(1.25-n*.18,2.1,8),mat([0x245c35,0x2d7540,0x397c45][n]));crown.position.y=2.25+n*.75;g.add(crown)}}
+  else{const crown=new THREE.Mesh(new THREE.SphereGeometry(1.35,10,8),mat(0x318044));crown.position.y=3;g.add(crown)}
+  g.position.set(side*(9.5+Math.random()*5),0,z);g.userData.track=trackName;scene.add(g);scenery.push(g);
+ }
+ for(let i=0;i<42;i++){addTree(i%2?1:-1,-i*4.5-10,true,'forest');addTree(i%2?-1:1,-i*5-15,false,'city')}
+ function addPalm(side,z){
+  const g=new THREE.Group(),tr=new THREE.Mesh(new THREE.CylinderGeometry(.12,.22,3.8,7),mat(0x86613c));tr.position.y=1.9;tr.rotation.z=side*.12;g.add(tr);
+  for(let k=0;k<7;k++){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.22,2.5,5),mat(0x32844c));leaf.position.set(Math.cos(k*Math.PI/3.5)*.95,3.65,Math.sin(k*Math.PI/3.5)*.95);leaf.rotation.z=-Math.cos(k*Math.PI/3.5)*.85;leaf.rotation.x=Math.sin(k*Math.PI/3.5)*.6;g.add(leaf)}
+  const hut=new THREE.Mesh(new THREE.BoxGeometry(2.4,1.8,2.2),mat(0xe5d0a4));hut.position.set(side*1.8,.9,0);g.add(hut);const roof=new THREE.Mesh(new THREE.ConeGeometry(1.9,.9,4),mat(0x9b5936));roof.position.set(side*1.8,2.25,0);roof.rotation.y=Math.PI/4;g.add(roof);
+  g.position.set(side*(11+Math.random()*3),0,z);g.userData.track='coast';scene.add(g);scenery.push(g);
+ }
+ for(let i=0;i<18;i++)addPalm(i%2?1:-1,-i*10-15);
+ makePlayer();initPreview();applyTrack();clock=new THREE.Clock();animate();
+}
+function scooterModel(vehicleIndex){
+ const v=scooters[vehicleIndex]||scooters[0], style=v.style, color=v.color;
+ let g=new THREE.Group();
+ const isOld=style==='oldalpha';
+ const isViper=style==='viperwind';
+ const rustTex=isOld?(assetTextures.rust||makeTexture('rust')):null;
+ const paint=new THREE.MeshStandardMaterial({color,metalness:isOld?.05:.38,roughness:isOld?.94:.42,map:rustTex||null});
+ const dark=new THREE.MeshStandardMaterial({color:0x151a20,roughness:.82});
+ const rubber=new THREE.MeshStandardMaterial({color:0x080b0f,roughness:.95});
+ const chrome=new THREE.MeshStandardMaterial({color:0xb8c6cc,metalness:.85,roughness:.25,map:assetTextures.metal||null});
+ const glass=new THREE.MeshStandardMaterial({color:0x7ec8e8,metalness:.15,roughness:.18,transparent:true,opacity:.72});
+ const lamp=new THREE.MeshStandardMaterial({color:0xfff1b0,emissive:0x665522});
+ function box(w,h,d,x,y,z,m,rx=0){let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.rotation.x=rx;o.castShadow=true;g.add(o);return o}
+ function wheel(z,r=.38){let tire=new THREE.Mesh(new THREE.TorusGeometry(r,.115,10,20),rubber);tire.rotation.y=Math.PI/2;tire.position.set(0,r+.12,z);tire.castShadow=true;g.add(tire);let hub=new THREE.Mesh(new THREE.CylinderGeometry(r*.43,r*.43,.19,14),chrome);hub.rotation.z=Math.PI/2;hub.position.set(0,r+.12,z);g.add(hub);let fork=box(.09,.72,.09,0,.78,z+(z>0?-.13:.13),chrome);return tire}
+ const isCub=style==='cub'||style==='alpha'||style==='oldalpha';
+ if(isViper){
+   const body=new THREE.MeshStandardMaterial({color:0x168f9b,metalness:.28,roughness:.38});
+   const trim=new THREE.MeshStandardMaterial({color:0x17232a,roughness:.72});
+   const seat=new THREE.MeshStandardMaterial({color:0x101316,roughness:.9});
+   const light=new THREE.MeshStandardMaterial({color:0xfff2b4,emissive:0x665522});
+   function part(w,h,d,x,y,z,mat,rx=0){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.rotation.x=rx;m.castShadow=true;g.add(m);return m}
+   wheel(-.88,.32);wheel(.9,.32);
+   part(.78,.72,.42,0,1.05,-.34,body,.12); // округлий передній щиток
+   part(.68,.38,.72,0,1.12,.27,body,-.12); // корпус під сидінням
+   part(.7,.13,.72,0,1.49,.35,seat);
+   part(.52,.18,.72,0,1.61,.32,seat);
+   part(.66,.12,.66,0,.65,.04,trim); // підлога для ніг
+   part(.12,.68,.12,0,1.26,-.66,trim);
+   part(.64,.09,.09,0,1.94,-.7,trim);
+   part(.34,.22,.08,0,1.42,-.58,light);
+   part(.18,.12,.12,-.43,1.25,-.38,light);part(.18,.12,.12,.43,1.25,-.38,light);
+   part(.22,.1,.12,0,1.08,.78,new THREE.MeshStandardMaterial({color:0xe53935,emissive:0x551010}));
+   const mirrorMat=trim;for(const x of [-.42,.42]){part(.045,.3,.045,x,2.08,-.7,chrome);const mir=new THREE.Mesh(new THREE.SphereGeometry(.09,10,8),mirrorMat);mir.position.set(x*1.35,2.23,-.72);g.add(mir)}
+   const rider=new THREE.Mesh(new THREE.BoxGeometry(.36,.55,.3),new THREE.MeshStandardMaterial({color:0x202e48}));rider.position.set(0,2.02,.08);g.add(rider);const helmet=new THREE.Mesh(new THREE.SphereGeometry(.24,14,10),new THREE.MeshStandardMaterial({color:0xffb52e}));helmet.position.set(0,2.48,.04);g.add(helmet);
+   const muff=new THREE.Mesh(new THREE.CylinderGeometry(.055,.07,.62,10),chrome);muff.rotation.x=Math.PI/2;muff.position.set(.38,.7,.52);g.add(muff);
+   return g;
+ }
+
+ const wheelR=isCub?.34:.43;
+ wheel(-.98,wheelR);wheel(.98,wheelR);
+ // frame, engine and footrest
+ box(.32,.38,.92,0,.93,0,dark);
+ box(isCub?.65:.42,.12,.9,0,.68,.08,dark);
+ if(isCub){
+   // Step-through frame and leg shield: Super Cub / Alpha moped silhouette.
+   box(.64,.78,.18,0,1.18,-.38,paint);
+   if(isOld){box(.10,.62,.08,-.35,1.12,-.39,new THREE.MeshStandardMaterial({color:0x4b2a1d,roughness:1}));box(.10,.62,.08,.35,1.12,-.39,new THREE.MeshStandardMaterial({color:0x4b2a1d,roughness:1}));}
+   box(.48,.25,.58,0,1.45,.28,paint);
+   box(.42,.12,.62,0,1.64,.25,dark);
+   box(.18,.42,.2,0,1.42,.78,chrome);
+   box(.85,.08,.08,0,1.91,.8,chrome);
+   box(.48,.12,.35,0,1.82,-.48,isOld?dark:glass);
+   if(isOld){box(.44,.08,.24,0,1.57,-.51,new THREE.MeshStandardMaterial({color:0x8c542b,roughness:1}));box(.16,.10,.22,0,1.96,.08,new THREE.MeshStandardMaterial({color:0x4c2b20,roughness:1}));}
+ }else{
+   // Fuel tank, aggressive fairings and tail section.
+   box(.62,.5,.82,0,1.43,-.05,paint);
+   box(.76,.58,.55,0,1.18,-.53,paint,.12);
+   box(.48,.28,.58,0,1.28,.55,paint,-.16);
+   box(.42,.12,.58,0,1.78,.48,dark);
+   box(.52,.36,.13,0,1.9,-.58,glass,-.25);
+   // Side fairings and front nose.
+   box(.16,.48,.72,-.34,1.12,-.35,paint,.18);
+   box(.16,.48,.72,.34,1.12,-.35,paint,.18);
+   box(.52,.32,.22,0,1.15,-.92,paint);
+ }
+ // Унікальні силуети й деталі для кожної моделі з магазину.
+ if(style==='sport'){
+   box(.82,.22,.68,0,1.34,-.12,new THREE.MeshStandardMaterial({color:0xf5f5f5,metalness:.25,roughness:.4}));
+   box(.12,.46,.66,-.43,1.14,-.32,new THREE.MeshStandardMaterial({color:0xd52c26}));box(.12,.46,.66,.43,1.14,-.32,new THREE.MeshStandardMaterial({color:0xd52c26}));
+ }else if(style==='ninja'){
+   box(.13,.56,.75,-.43,1.16,-.3,new THREE.MeshStandardMaterial({color:0x8bd33f,metalness:.2}));box(.13,.56,.75,.43,1.16,-.3,new THREE.MeshStandardMaterial({color:0x8bd33f,metalness:.2}));
+   box(.5,.18,.22,0,1.75,.55,dark);
+ }else if(style==='super'){
+   box(.23,.2,.12,0,1.42,-1.02,lamp);box(.23,.2,.12,0,1.17,-1.02,lamp);
+   box(.92,.13,.42,0,1.62,.42,dark);
+ }else if(style==='alpha'){
+   box(.72,.55,.22,0,1.12,-.55,new THREE.MeshStandardMaterial({color:0x303a43}));
+   box(.66,.18,.35,0,1.86,.48,dark);
+ }else if(style==='oldalpha'){
+   box(.7,.12,.4,0,1.66,.42,new THREE.MeshStandardMaterial({color:0x68432b,roughness:1}));
+   box(.56,.5,.12,0,1.18,-.62,new THREE.MeshStandardMaterial({color:0x573322,roughness:1}));
+ }
+ // Seat, handlebar, mirrors and headlight
+ box(.42,.13,.48,0,isCub?1.77:1.72,.42,dark);
+ box(1.02,.07,.08,0,isCub?1.92:1.95,-.72,chrome);
+ for(const x of [-.48,.48]){
+   let mirror=new THREE.Mesh(new THREE.SphereGeometry(.095,10,8),dark);mirror.scale.set(1,.7,.5);mirror.position.set(x,2.08,-.68);g.add(mirror);
+   box(.055,.34,.055,x,1.98,-.68,chrome);
+ }
+ let head=new THREE.Mesh(new THREE.SphereGeometry(isCub?.16:.19,12,8),lamp);
+ head.position.set(0,isCub?1.48:1.48,-.9);g.add(head);
+ // Exhaust and rear light
+ let exhaust=new THREE.Mesh(new THREE.CylinderGeometry(.075,.09,.78,10),chrome);exhaust.rotation.x=Math.PI/2;exhaust.position.set(isCub?.34:-.38,.75,.62);g.add(exhaust);
+ box(.22,.1,.1,0,1.18,1.02,new THREE.MeshStandardMaterial({color:0xff3333,emissive:0x661111}));
+ // Rider silhouette shared by all bikes
+ box(.4,.68,.3,0,2.12,.08,new THREE.MeshStandardMaterial({color:0x202e48}),-.18);
+ let helmet=new THREE.Mesh(new THREE.SphereGeometry(.27,14,10),new THREE.MeshStandardMaterial({color:0xffb52e,metalness:.2}));
+ helmet.position.set(0,2.62,-.02);g.add(helmet);
+ // Гальмівні диски, супорти та металеві деталі коліс
+ for(const z of [-.98,.98])for(const side of [-1,1]){
+  const disc=new THREE.Mesh(new THREE.TorusGeometry(isCub?.23:.29,.035,8,24),new THREE.MeshStandardMaterial({color:0xaebbc1,metalness:.88,roughness:.28}));
+  disc.rotation.y=Math.PI/2;disc.position.set(side*(isCub?.18:.2),isCub?.46:.55,z);g.add(disc);
+  const caliper=new THREE.Mesh(new THREE.BoxGeometry(.09,.22,.16),new THREE.MeshStandardMaterial({color:style==='ninja'?0x9bd63b:0xb72e2e,metalness:.25}));
+  caliper.position.set(side*(isCub?.27:.29),isCub?.55:.64,z);g.add(caliper);
+ }
+ const chain=new THREE.Mesh(new THREE.BoxGeometry(.08,.09,.92),new THREE.MeshStandardMaterial({color:0x8d999e,metalness:.8}));
+ chain.position.set(-.29,.73,.1);g.add(chain);
+ return g;
+}
+function initPreview(){
+ const c=$('previewCanvas');if(!c||!window.THREE)return;
+ try{previewRenderer=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});previewRenderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));previewRenderer.setSize(c.clientWidth||520,c.clientHeight||150,false);previewScene=new THREE.Scene();previewCamera=new THREE.PerspectiveCamera(38,(c.clientWidth||520)/(c.clientHeight||150),.1,50);previewCamera.position.set(0,3.1,7.2);previewCamera.lookAt(0,1.2,0);previewScene.add(new THREE.HemisphereLight(0xffffff,0x304050,2));let key=new THREE.DirectionalLight(0xffe2b0,2.4);key.position.set(-3,6,5);previewScene.add(key);let floor=new THREE.Mesh(new THREE.CircleGeometry(2.4,48),new THREE.MeshStandardMaterial({color:0x173246,metalness:.35,roughness:.7}));floor.rotation.x=-Math.PI/2;floor.position.y=-.03;previewScene.add(floor);updatePreview();drawPreview();}catch(e){console.warn('Preview renderer unavailable',e)}
+}
+function updatePreview(){if(!previewScene||!previewRenderer)return;if(previewBike)previewScene.remove(previewBike);previewBike=scooterModel(save.selected);previewBike.scale.set(.92,.92,.92);previewBike.rotation.y=-.28;previewScene.add(previewBike)}
+function drawPreview(){if(!previewRenderer)return;requestAnimationFrame(drawPreview);if(previewBike)previewBike.rotation.y+=.004;previewRenderer.render(previewScene,previewCamera)}
+function makePlayer(){if(!scene)return;if(player)scene.remove(player);player=scooterModel(save.selected);player.position.set(0,0,3);scene.add(player)}
+function makeRival(z,l){let g=scooterModel(1+Math.floor(Math.random()*3));g.scale.set(.88,.88,.88);g.position.set(l,0,z);g.userData.raceProgress=Math.max(0,progress+(3-z)*.35);g.userData.raceSpeed=(difficulty==='easy'?48:difficulty==='hard'?76:62)+Math.random()*8;scene.add(g);rivals.push(g)}
+function makeTrafficCar(laneX){
+ const g=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color:[0xd83e36,0x246bb3,0xe6e8e8,0xe0b52e,0x242b34,0x36815c][Math.floor(Math.random()*6)],metalness:.3,roughness:.42}),glass=new THREE.MeshStandardMaterial({color:0x8ec9dc,metalness:.12,roughness:.2,transparent:true,opacity:.82}),dark=new THREE.MeshStandardMaterial({color:0x111820,roughness:.85}),lamp=new THREE.MeshStandardMaterial({color:0xffefb0,emissive:0x554422}),tail=new THREE.MeshStandardMaterial({color:0xf22b22,emissive:0x661010});
+ const part=(w,h,d,x,y,z,m)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o};
+ part(1.55,.62,2.9,0,.58,0,paint);part(1.34,.56,1.38,0,1.12,-.12,glass);part(1.38,.13,1.42,0,1.43,-.12,paint);
+ part(1.6,.16,.16,0,.43,-1.38,dark);part(1.6,.16,.16,0,.43,1.38,dark);
+ for(const x of [-.83,.83])for(const z of [-.9,.92]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.17,14),dark);w.rotation.z=Math.PI/2;w.position.set(x,.34,z);g.add(w)}
+ for(const x of [-.48,.48]){part(.24,.16,.08,x,.72,-1.49,lamp);part(.24,.16,.08,x,.72,1.49,tail)}
+ g.position.set(laneX,0,-140);g.userData.lane=laneX;g.userData.speed=18+Math.random()*16;scene.add(g);trafficCars.push(g);return g;
+}
+function applyTrack(){if(!scene||!ground||!road)return;const cfg=track==='coast'?[0x9bd9ee,0xd6c78b,0x3f9eae]:track==='forest'?[0x9fc5a0,0x355d37,0x303a3c]:[0x83c9ed,0x4b8652,0x303945];scene.background=new THREE.Color(cfg[0]);scene.fog.color.setHex(cfg[0]);ground.material.color.setHex(cfg[1]);road.material.color.setHex(cfg[2]);scenery.forEach(o=>{o.visible=o.userData.track===track})}
+function startRace(isEndless=false){if(!scene)return;audioReady();playSound('start');running=true;finished=false;paused=false;crashTimer=0;crashedRun=false;$('crashOverlay').style.display='none';engineAudio.currentTime=0;engineAudio.play().catch(()=>toast('Не вдалося запустити звук. Перевір файл motorcycle-engine.mp3'));endlessMode=isEndless;endlessKm=0;segmentCoins=0;speed=0;progress=0;lane=0;spawn=0;boostTime=0;turboCharge=100;turboActive=false;$('turboHud').style.display='none';coinCount=0;makePlayer();rivals.forEach(x=>scene.remove(x));rivals=[];trafficCars.forEach(x=>scene.remove(x));trafficCars=[];crashSparks.forEach(x=>scene.remove(x));crashSparks=[];objects.forEach(x=>scene.remove(x));objects=[];coins.forEach(x=>scene.remove(x));coins=[];if(!endlessMode){makeRival(-24,-2);makeRival(-39,2);makeRival(-55,0)}$('menu').style.display='none';$('racebar').style.display=endlessMode?'none':'block';$('pause').style.display='block';$('pause').textContent='Ⅱ ПАУЗА';$('progress').style.width='0%';$('status').textContent=endlessMode?'∞ 0.0 км':'ГОНКА!';toast(endlessMode?'НЕСКІНЧЕННИЙ ЗАЇЗД! Обганяй автомобілі':'СТАРТ! Утримуй ГАЗ!')}
+$('start').onclick=()=>startRace(false);$('endless').onclick=()=>startRace(true);
+document.querySelectorAll('.track').forEach(b=>b.onclick=()=>{track=b.dataset.track;document.querySelectorAll('.track').forEach(x=>x.classList.toggle('active',x===b));applyTrack()});
+document.querySelectorAll('.difficulty').forEach(b=>b.onclick=()=>{difficulty=b.dataset.diff;document.querySelectorAll('.difficulty').forEach(x=>x.classList.toggle('active',x===b))});
+$('pause').onclick=()=>{if(!running&&!paused)return;paused=!paused;if(paused){keys={};engineAudio.pause()}else{audioReady();engineAudio.play().catch(()=>toast('Не вдалося запустити звук двигуна'))}$('pause').textContent=paused?'▶ ПРОДОЛЖИТЬ':'Ⅱ ПАУЗА';$('status').textContent=paused?'ПАУЗА':'ГОНКА!'};
+let keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();if(e.key==='Escape'&&running){paused=!paused;$('pause').textContent=paused?'▶ ПРОДОЛЖИТЬ':'Ⅱ ПАУЗА'}});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function bindHold(id,key){let b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true;b.setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>keys[key]=false))}
+bindHold('left','arrowleft');bindHold('right','arrowright');bindHold('boost','boost');bindHold('gas','gas');bindHold('brake','brake');
+function triggerCrash(){
+ if(crashTimer>0||!running)return;
+ running=false;paused=false;crashedRun=true;keys={};crashTimer=1.65;
+ $('crashOverlay').style.display='flex';$('status').textContent='АВАРІЯ!';
+ for(let i=0;i<14;i++){const spark=new THREE.Mesh(new THREE.SphereGeometry(.055+Math.random()*.07,6,5),new THREE.MeshBasicMaterial({color:i%2?0xffa12e:0xffe5a0}));spark.position.set(player.position.x+(Math.random()-.5)*.9,.7+Math.random(),player.position.z+(Math.random()-.5)*.8);spark.userData.v=new THREE.Vector3((Math.random()-.5)*5,Math.random()*4,Math.random()*4);scene.add(spark);crashSparks.push(spark)}
+ engineAudio.pause();toast('ЗІТКНЕННЯ!');
+}
+function endRace(win){
+ running=false;playSound('end');finished=true;paused=false;keys={};speed=0;
+ $('racebar').style.display='none';$('pause').style.display='none';$('menu').style.display='flex';
+ if(endlessMode){
+   const earned=coinCount*(difficulty==='hard'?50:difficulty==='medium'?35:25);
+   if(earned){save.cash+=earned;persist()}
+   $('status').textContent='Заїзд завершено';
+   toast('ГРА ЗАВЕРШЕНА! Дистанція: '+(progress/420).toFixed(1)+' км · Монети: '+earned);
+ }else if(win){
+   let reward=450+coinCount*(difficulty==='hard'?50:difficulty==='medium'?35:25)+(difficulty==='hard'?1000:difficulty==='medium'?350:0);
+   save.wins++;save.cash+=reward;persist();toast('ПЕРЕМОГА! Нагорода '+reward+' монет');
+ }else{
+   const coinPay=coinCount*(difficulty==='hard'?50:difficulty==='medium'?35:25);if(coinPay){save.cash+=coinPay;persist()}
+   toast(crashedRun?'АВАРІЯ! Монети за бонуси: '+coinPay:'Суперник фінішував першим. Монети: '+coinPay);
+ }
+}
+function animate(){
+ requestAnimationFrame(animate);if(!renderer)return;let dt=Math.min(clock.getDelta(),.04);
+ if(running&&!paused){
+  let max=scooters[save.selected].max+save.engine*5+save.ecu*12;
+  let accelerating=keys.gas||keys.arrowup||keys.w;
+  speed=Math.max(0,speed+(accelerating?(42+save.exhaust*5):-17)*dt);
+  if(keys.brake||keys.arrowdown)speed=Math.max(0,speed-85*dt);
+  if(keys.boost&&boostTime<=0&&turboCharge>0){boostTime=turboCharge/100*(2.2+save.turbo*.35);turboActive=true;keys.boost=false;playSound('turbo')}
+  if(boostTime>0){speed=Math.min(max+25+save.turbo*5,speed+(55+save.exhaust*5)*dt);boostTime=Math.max(0,boostTime-dt);turboCharge=Math.max(0,boostTime/(2.2+save.turbo*.35)*100);$('turboHud').style.display='block';$('turboPct').textContent=Math.ceil(turboCharge)+'%';$('turboFill').style.width=turboCharge+'%';if(boostTime<=0){turboActive=false;turboCharge=0;keys.boost=false;toast('ТУРБО ЗАКІНЧИЛОСЯ!')}}else{speed=Math.min(max,speed);if(turboActive){turboActive=false;turboCharge=0}if(turboCharge<=0){$('turboPct').textContent='0%';$('turboFill').style.width='0%'}}
+  let dir=(keys.arrowleft||keys.a?-1:0)+(keys.arrowright||keys.d?1:0);lane+=dir*dt*(4.2+save.tires*.5+save.suspension*.35);lane=Math.max(-6.7,Math.min(6.7,lane));player.position.x+=(lane-player.position.x)*Math.min(1,dt*8);player.rotation.z=-dir*.22;player.rotation.y=-dir*.09;
+  let worldSpeed=speed/3.6;progress+=worldSpeed*dt*.75;
+  if(endlessMode){
+    const kmNow=Math.floor(progress/420);
+    if(kmNow>endlessKm){const passed=kmNow-endlessKm;endlessKm=kmNow;const reward=(difficulty==='hard'?1000:difficulty==='medium'?700:500)*passed;save.cash+=reward;persist();toast('КІЛОМЕТР ПРОЙДЕНО! +'+reward+' монет')}
+    $('status').textContent='∞ '+(progress/420).toFixed(1)+' км';
+  }else{$('progress').style.width=Math.min(100,progress/420*100)+'%';}
+  roadLines.forEach(m=>{m.position.z+=worldSpeed*dt*2.3;if(m.position.z>12)m.position.z-=200});
+  if(roadTexture)roadTexture.offset.y=(roadTexture.offset.y+worldSpeed*dt*.075)%1;if(groundTexture)groundTexture.offset.y=(groundTexture.offset.y+worldSpeed*dt*.055)%1;
+  scenery.forEach(o=>{o.position.z+=worldSpeed*dt*2.0;if(o.position.z>14)o.position.z-=190});
+  // Соперники движутся независимо от игрока: сложность действительно влияет на результат.
+  for(const r of [...rivals]){r.userData.raceProgress+=(r.userData.raceSpeed/3.6)*dt*.75;r.position.z=3-(r.userData.raceProgress-progress)*.8;}
+  if(rivals.some(r=>r.userData.raceProgress>=420)&&running){endRace(false)}
+  if(!endlessMode&&progress>=420&&running){endRace(true)}
+  // Рухомі автомобілі на дорозі
+  for(const car of [...trafficCars]){
+   car.position.z+=(worldSpeed*2.05+car.userData.speed*.22)*dt;
+   if(car.position.z>14){scene.remove(car);trafficCars.splice(trafficCars.indexOf(car),1)}
+   else if(Math.abs(car.position.z-player.position.z)<1.75&&Math.abs(car.position.x-player.position.x)<1.22){triggerCrash();break}
+  }
+  if(running&&Math.random()<dt*(difficulty==='hard'?.62:difficulty==='medium'?.48:.34)){
+   const laneX=[-6,-2,2,6][Math.floor(Math.random()*4)];
+   if(!trafficCars.some(c=>Math.abs(c.position.x-laneX)<.5&&c.position.z<-95))makeTrafficCar(laneX);
+  }
+  // Золотые монеты на трассе
+  for(const c of [...coins]){c.position.z+=worldSpeed*dt*2.1;c.rotation.y+=dt*3;if(c.position.z>12){scene.remove(c);coins.splice(coins.indexOf(c),1)}else if(Math.abs(c.position.z-player.position.z)<1.25&&Math.abs(c.position.x-player.position.x)<.9){scene.remove(c);coins.splice(coins.indexOf(c),1);coinCount++;if(endlessMode)segmentCoins++;toast('Монета собрана!')}}
+  if(Math.random()<dt*.12){let coin=new THREE.Mesh(new THREE.TorusGeometry(.32,.11,8,16),new THREE.MeshStandardMaterial({color:0xffcf33,emissive:0x664400,metalness:.7}));coin.position.set([-3,0,3][Math.floor(Math.random()*3)],1.15,-110);scene.add(coin);coins.push(coin)}
+  if(rivals.some(r=>Math.abs(r.position.z-player.position.z)<1.1&&Math.abs(r.position.x-player.position.x)<.85)){triggerCrash()}
+  $('speed').textContent=Math.round(speed);
+ }else{$('speed').textContent=Math.round(speed)}
+ if(crashTimer>0){
+  crashTimer=Math.max(0,crashTimer-dt);
+  const t=1-crashTimer/1.65;
+  if(player){player.rotation.z=-1.25*Math.min(1,t*1.8);player.rotation.x=.38*Math.min(1,t*1.4);player.position.x+=(lane+.9-player.position.x)*dt*1.5}
+  camera.position.x+=(player.position.x*.35+Math.sin(t*35)*.16-camera.position.x)*dt*5;
+  for(const spark of [...crashSparks]){spark.position.addScaledVector(spark.userData.v,dt);spark.userData.v.y-=8*dt;spark.scale.multiplyScalar(.985);if(spark.position.y<0){scene.remove(spark);crashSparks.splice(crashSparks.indexOf(spark),1)}}
+  if(crashTimer<=0){$('crashOverlay').style.display='none';makePlayer();endRace(false)}
+ }
+ engineSound();
+ if(player){camera.position.x+=(player.position.x*.35-camera.position.x)*dt*2;camera.lookAt(player.position.x*.22,1,-8)}
+ renderer.render(scene,camera);
+}
+addEventListener('resize',()=>{if(renderer){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}if(previewRenderer){const c=$('previewCanvas');previewRenderer.setSize(c.clientWidth||520,c.clientHeight||150,false);previewCamera.aspect=(c.clientWidth||520)/(c.clientHeight||150);previewCamera.updateProjectionMatrix()}});
+refresh();init3D();
+})();
+</script>
+</body></html>
